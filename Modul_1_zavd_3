@@ -1,0 +1,78 @@
+class Lecture {
+  final DateTime date;
+  final String group;
+  final int studentCount;
+
+  Lecture(this.date, this.group, this.studentCount);
+}
+
+class Course<T> {
+  final String courseName;
+  final String departmentName;
+  final List<T> lectures;
+
+  Course(this.courseName, this.departmentName, this.lectures);
+
+  double averageStudentCount() {
+    if (lectures.isEmpty) return 0.0;
+    int totalStudentCount = 0;
+    for (var lecture in lectures) {
+      if (lecture is Lecture) {
+        totalStudentCount += lecture.studentCount;
+      }
+    }
+    return totalStudentCount / lectures.length;
+  }
+
+  T lectureWithMostStudents() {
+    if (lectures.isEmpty)
+      return lectures.first; // Повертати перший елемент, якщо список порожній
+    lectures.sort((a, b) {
+      if (a is Lecture && b is Lecture) {
+        return b.studentCount - a.studentCount;
+      }
+      return 0;
+    });
+    return lectures.first;
+  }
+
+  int wordCountInDepartmentName() {
+    return departmentName.split(' ').length;
+  }
+
+  Future<T> fetchData() async {
+    // Симулюємо асинхронне отримання даних
+    await Future.delayed(Duration(seconds: 2));
+    if (lectures.isNotEmpty && lectures.first is Lecture) {
+      return lectureWithMostStudents();
+    } else {
+      throw Exception("Немає лекцій або дані некоректні.");
+    }
+  }
+}
+
+void main() async {
+  var lecture1 = Lecture(DateTime(2023, 10, 28), 'Група A', 3);
+  var lecture2 = Lecture(DateTime(2023, 10, 29), 'Група B', 5);
+  var lecture3 = Lecture(DateTime(2023, 10, 30), 'Група A', 7);
+
+  var course = Course<Lecture>(
+      'Програмування', 'Кафедра ІТ', [lecture1, lecture2, lecture3]);
+
+  print('Середня кількість студентів: ${course.averageStudentCount()}');
+  var lecture = course.lectureWithMostStudents();
+  if (lecture != null) {
+    print('Лекція з найбільшою кількістю студентів: ${lecture.studentCount}');
+  } else {
+    print('Немає лекцій');
+  }
+  print(
+      'Кількість слів у назві кафедри: ${course.wordCountInDepartmentName()}');
+
+  try {
+    var result = await course.fetchData();
+    print('Результат асинхронного запиту: $result');
+  } catch (error) {
+    print('Помилка при асинхронному запиті: $error');
+  }
+}
